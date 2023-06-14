@@ -27,12 +27,14 @@ public class ClientHandler extends Thread {
             performLogin();
             boolean isConnected = true;
 
-            while (isConnected) {
+            while (isConnected)
+            {
                 String request = reader.readLine();
                 if (request != null) {
                     if (request.equalsIgnoreCase("q")) {
                         isConnected = false;
                         server.removeClient(username);
+                        System.out.println("hereeeeeee");
                         if(!server.searchInOfflineList(username))
                             server.disconnectedClients.put(username,clientSocket);
                         clientSocket.close();

@@ -13,7 +13,7 @@ public class Server {
     private static final int PORT = 56565; // Choose a suitable port number
     private Map<String, Socket> connectedClients;
     Map<String, Socket> disconnectedClients;
-    public String baseDirectory = "ServerFiles";
+    public String baseDirectory = "D:\\ServerFiles";
 
     public Server() {
         connectedClients = new HashMap<>();

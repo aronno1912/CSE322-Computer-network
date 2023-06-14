@@ -88,16 +88,16 @@ public class Client {
         writer.println("u");
         writer.println(filename);
 
-        try (BufferedInputStream fileInputStream = new BufferedInputStream(new FileInputStream(file))) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                socket.getOutputStream().write(buffer, 0, bytesRead);  //clientSocket
-            }
-        }
+//        try (BufferedInputStream fileInputStream = new BufferedInputStream(new FileInputStream(file))) {
+//            byte[] buffer = new byte[1024];
+//            int bytesRead;
+//            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+//                socket.getOutputStream().write(buffer, 0, bytesRead);  //clientSocket
+//            }
+//        }
 
-        String response = reader.readLine();
-        System.out.println("Server response: " + response);
+        //String response = reader.readLine();
+        //System.out.println("Server response: " + response);
     }
 
     public static void main(String[] args) {
