@@ -15,14 +15,13 @@ public class ClientHandler extends Thread {
     private String username;
     File clientDirectory;
     private static final String END_OF_FILE_MARKER = "END_OF_FILE";
-    private Map <String, List <String>> publiclyUploadedFiles;
-    private Map <String, List <String>> privatelyUploadedFiles;
+    private static final String END_OF_RESPONSE = "END_OF_RESPONSE";
+
 
     public ClientHandler(Socket clientSocket, Server server) {
         this.clientSocket = clientSocket;
         this.server = server;
-        publiclyUploadedFiles=new HashMap <>();
-        privatelyUploadedFiles=new HashMap <>();
+
     }
 
     @Override
@@ -58,6 +57,9 @@ public class ClientHandler extends Thread {
                         // Send the list of connected clients to the client
                         writer.println("Connected clients (online):     " + connectedClients);
                         writer.println(" Other Connected clients (offline currently):     " + offlineClients);
+                        writer.println(END_OF_RESPONSE);
+
+                        //request = reader.readLine();
 
                     }
 
@@ -72,9 +74,14 @@ public class ClientHandler extends Thread {
 
                     else {
                         // Process other client requests
-                        // ...
+
+                         // writer.println("ei else e ");
+                        // ..
                     }
+
                 }
+
+                //writer.println("req null hoye gese ");
             }
 
 //            // Handle client requests
@@ -97,20 +104,32 @@ public class ClientHandler extends Thread {
     private void sendFileList() throws IOException {
         writer.println("Listing uploaded files:");
 
+
+       // System.out.println("ekhon map e ache ");
+//        for (Map.Entry<String, List<String>> entry : publiclyUploadedFiles.entrySet()) {
+//            String key = entry.getKey();
+//            List<String> value = entry.getValue();
+//            System.out.println("Key: " + key);
+//            System.out.println("Value: " + value);
+//        }
+
+
         // Iterate over the uploadedFiles map
-        for (Map.Entry<String, List<String>> entry : publiclyUploadedFiles.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : server.publiclyUploadedFiles.entrySet()) {
             String username = entry.getKey();
 
             List<String> files = entry.getValue();
 
             writer.println("User: " + username);
+            //writer.println("User: " + this.username);
 
-            if(username==this.username)
-            {
-                List<String> associatedList = privatelyUploadedFiles.get(username);
+            if(username.equals(this.username))
+            {    //writer.println("same");
+                List<String> associatedList = server.privatelyUploadedFiles.get(username);
+                //System.out.println("size hocce "+server.privatelyUploadedFiles.size() +" list er size "+associatedList.size());
 
                 if (associatedList != null) {
-                    System.out.println("Privately uploaded files " + ": " + associatedList);}
+                    writer.println("Own Privately uploaded files " + ": " + associatedList);}
 
             }
 
@@ -123,10 +142,11 @@ public class ClientHandler extends Thread {
                 }
             }
 
-            writer.println();  // Add an empty line between users
+            //writer.println();  // Add an empty line between users
         }
+        writer.println("List sent successfully ");
+        writer.println(END_OF_RESPONSE);
 
-        writer.flush();  // Flush the writer to ensure all data is sent
     }
 
     private void performLogin() throws IOException {
@@ -151,10 +171,12 @@ public class ClientHandler extends Thread {
         }
 
         writer.println("Welcome, " + username + "! You are now connected to the server.");
-        System.out.println("Client " + username + " connected.");
+        System.out.println("Client " + username + " connected.");  //server side e
     }
 
     //file receive er jonno ja client side theke pathacche
+
+
 //    private void handleFileUpload() throws IOException {
 //        String filename = reader.readLine();
 //        File file = new File(clientDirectory, filename);
@@ -194,20 +216,22 @@ public class ClientHandler extends Thread {
 
         if (visibility.equalsIgnoreCase("public")) {
 
-            List<String> list = publiclyUploadedFiles.getOrDefault(username, new ArrayList <>());
+            List<String> list = server.publiclyUploadedFiles.getOrDefault(username, new ArrayList <>());
             list.add(filename);
-            publiclyUploadedFiles.put(username, list);
+            server.publiclyUploadedFiles.put(username, list);
 
 
         }
 
         else {
-            List<String> list = privatelyUploadedFiles.getOrDefault(username, new ArrayList <>());
+            List<String> list = server.privatelyUploadedFiles.getOrDefault(username, new ArrayList <>());
             list.add(filename);
-            privatelyUploadedFiles.put(username, list);
+            server.privatelyUploadedFiles.put(username, list);
+            System.out.println("private e rakhsi "+server.privatelyUploadedFiles.size());
         }
 
         writer.println("File uploaded successfully.");
+       // writer.println(END_OF_RESPONSE);
     }
 }
 

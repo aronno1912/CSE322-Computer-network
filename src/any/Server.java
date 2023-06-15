@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Server {
@@ -15,9 +16,14 @@ public class Server {
     Map<String, Socket> disconnectedClients;
     public String baseDirectory = "D:\\ServerFiles";
 
+     Map <String, List <String>> publiclyUploadedFiles;
+    Map <String, List <String>> privatelyUploadedFiles;
+
     public Server() {
         connectedClients = new HashMap<>();
         disconnectedClients = new HashMap<>();
+        publiclyUploadedFiles=new HashMap<>();
+        privatelyUploadedFiles=new HashMap<>();
 
     }
 
@@ -45,6 +51,11 @@ public class Server {
 
     public synchronized void removeClient(String username) {
         connectedClients.remove(username);
+    }
+
+    public synchronized  void addFiles()
+    {
+
     }
 
     public synchronized String getConnectedClients() {

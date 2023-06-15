@@ -10,6 +10,7 @@ public class Client {
     private PrintWriter writer;
     private Socket socket;
     private static final String END_OF_FILE_MARKER = "END_OF_FILE";
+    private static final String END_OF_RESPONSE = "END_OF_RESPONSE";
 
 
     public void start(String host, int port)
@@ -52,25 +53,45 @@ public class Client {
 //                System.out.println(serverMessage);
 //            }
 
-            while ((command = userInputReader.readLine()) != null)
+            while (true)
 
             {
-                if (command.equalsIgnoreCase("q")) {
+
+                System.out.print("Enter a command: ");
+                 command = userInputReader.readLine();
+
+
+                if (command.equalsIgnoreCase("q"))
+                {
                     writer.println(command); // clienthandler handle korbe
                     System.out.println("Your connection is terminated");
                     break;
                 }
 
-                if (command.equalsIgnoreCase("u")) {
+                else if (command.equalsIgnoreCase("u"))
+                {
                     handleFileUploadFromConsole();
                 }
-                else if (command.equalsIgnoreCase("lookup")) {
-                    handleFileLookup();}
+                else if (command.equalsIgnoreCase("lookup"))
+                {
+                    handleFileLookup();
 
-                else {
+                }
+
+                else
+                {
                     writer.println(command);
-                    String response = reader.readLine();
-                    System.out.println("Server response: " + response);
+                    writer.flush();
+                    String response;
+                    response=reader.readLine();
+                    while (!(response.equals(END_OF_RESPONSE)) )
+                    {
+                        System.out.println(response);
+                        response=reader.readLine();
+
+
+                    }
+
                 }
             }
 
@@ -85,12 +106,32 @@ public class Client {
 
     private void handleFileLookup() throws IOException {
         writer.println("lookup");
+        writer.flush();
 
         // Receive and display the list of files
         String response;
-        while ((response = reader.readLine()) != null) {
+        response=reader.readLine();
+        while (!(response.equals(END_OF_RESPONSE)) )
+        {
             System.out.println(response);
+            response=reader.readLine();
+
+
         }
+
+//        writer.flush();
+//        String response = reader.readLine(); //server er response pawar jonno
+//        System.out.println("Server response: " + response);
+
+//        while ((response = reader.readLine()) != null) {
+//            if (response.equals(END_OF_RESPONSE)) {
+//                break;
+//            }
+//            System.out.println(response);
+//        }
+
+
+
     }
     private void handleFileUploadFromConsole() throws IOException {
         BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
@@ -109,7 +150,7 @@ public class Client {
         String filename = file.getName();
         writer.println("u");
         writer.println(filename); //to send commands and data to server
-        writer.println(visibility);// public or private
+        writer.println(visibility);     // public or private
 
 //        try (BufferedInputStream fileInputStream = new BufferedInputStream(new FileInputStream(file))) {
 //            byte[] buffer = new byte[1024];
