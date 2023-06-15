@@ -9,6 +9,7 @@ public class Client {
     private BufferedReader reader;
     private PrintWriter writer;
     private Socket socket;
+    private static final String END_OF_FILE_MARKER = "END_OF_FILE";
 
 
     public void start(String host, int port)
@@ -55,10 +56,18 @@ public class Client {
 
             {
                 if (command.equalsIgnoreCase("q")) {
+                    writer.println(command); // clienthandler handle korbe
+                    System.out.println("Your connection is terminated");
                     break;
-                } else if (command.equalsIgnoreCase("u")) {
+                }
+
+                if (command.equalsIgnoreCase("u")) {
                     handleFileUploadFromConsole();
-                } else {
+                }
+                else if (command.equalsIgnoreCase("lookup")) {
+                    handleFileLookup();}
+
+                else {
                     writer.println(command);
                     String response = reader.readLine();
                     System.out.println("Server response: " + response);
@@ -73,6 +82,16 @@ public class Client {
         
     }
 
+
+    private void handleFileLookup() throws IOException {
+        writer.println("lookup");
+
+        // Receive and display the list of files
+        String response;
+        while ((response = reader.readLine()) != null) {
+            System.out.println(response);
+        }
+    }
     private void handleFileUploadFromConsole() throws IOException {
         BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Enter the file path: ");
@@ -84,9 +103,13 @@ public class Client {
             return;
         }
 
+        System.out.println("Specify file visibility (public/private): ");
+        String visibility = consoleReader.readLine();
+
         String filename = file.getName();
         writer.println("u");
-        writer.println(filename);
+        writer.println(filename); //to send commands and data to server
+        writer.println(visibility);// public or private
 
 //        try (BufferedInputStream fileInputStream = new BufferedInputStream(new FileInputStream(file))) {
 //            byte[] buffer = new byte[1024];
@@ -96,8 +119,18 @@ public class Client {
 //            }
 //        }
 
-        //String response = reader.readLine();
-        //System.out.println("Server response: " + response);
+        try (BufferedInputStream fileInputStream = new BufferedInputStream(new FileInputStream(file))) {
+            byte[] buffer = new byte[4096];  // Adjust the buffer size as per your requirements
+            int bytesRead;
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                writer.println(new String(buffer, 0, bytesRead));
+            }
+
+            writer.println(END_OF_FILE_MARKER);
+        }
+        writer.flush();
+        String response = reader.readLine(); //server er response pawar jonno
+        System.out.println("Server response: " + response);
     }
 
     public static void main(String[] args) {

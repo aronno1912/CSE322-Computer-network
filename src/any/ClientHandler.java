@@ -1,7 +1,11 @@
 package any;
-
+//sever side er jonno
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ClientHandler extends Thread {
     private Socket clientSocket;
@@ -10,10 +14,15 @@ public class ClientHandler extends Thread {
     private PrintWriter writer;
     private String username;
     File clientDirectory;
+    private static final String END_OF_FILE_MARKER = "END_OF_FILE";
+    private Map <String, List <String>> publiclyUploadedFiles;
+    private Map <String, List <String>> privatelyUploadedFiles;
 
     public ClientHandler(Socket clientSocket, Server server) {
         this.clientSocket = clientSocket;
         this.server = server;
+        publiclyUploadedFiles=new HashMap <>();
+        privatelyUploadedFiles=new HashMap <>();
     }
 
     @Override
@@ -26,7 +35,8 @@ public class ClientHandler extends Thread {
             // Perform login process
             performLogin();
             boolean isConnected = true;
-
+             
+            //ekhane sob client request handle korbe
             while (isConnected)
             {
                 String request = reader.readLine();
@@ -56,6 +66,10 @@ public class ClientHandler extends Thread {
                         handleFileUpload();
                     }
 
+                    else if (request.equalsIgnoreCase("lookup")) {
+                        sendFileList();
+                    }
+
                     else {
                         // Process other client requests
                         // ...
@@ -78,6 +92,41 @@ public class ClientHandler extends Thread {
 
 
         }
+    }
+
+    private void sendFileList() throws IOException {
+        writer.println("Listing uploaded files:");
+
+        // Iterate over the uploadedFiles map
+        for (Map.Entry<String, List<String>> entry : publiclyUploadedFiles.entrySet()) {
+            String username = entry.getKey();
+
+            List<String> files = entry.getValue();
+
+            writer.println("User: " + username);
+
+            if(username==this.username)
+            {
+                List<String> associatedList = privatelyUploadedFiles.get(username);
+
+                if (associatedList != null) {
+                    System.out.println("Privately uploaded files " + ": " + associatedList);}
+
+            }
+
+            if (files.isEmpty()) {
+                writer.println("No public files uploaded.");
+            } else {
+                writer.println("Public Files:");
+                for (String file : files) {
+                    writer.println(file);
+                }
+            }
+
+            writer.println();  // Add an empty line between users
+        }
+
+        writer.flush();  // Flush the writer to ensure all data is sent
     }
 
     private void performLogin() throws IOException {
@@ -105,22 +154,57 @@ public class ClientHandler extends Thread {
         System.out.println("Client " + username + " connected.");
     }
 
+    //file receive er jonno ja client side theke pathacche
+//    private void handleFileUpload() throws IOException {
+//        String filename = reader.readLine();
+//        File file = new File(clientDirectory, filename);
+//
+//        if (file.exists()) {
+//            writer.println("File already exists.");
+//            return;
+//        }
+//
+//        try (BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+//            byte[] buffer = new byte[4096];
+//            int bytesRead;
+//            while ((bytesRead = clientSocket.getInputStream().read(buffer)) != -1) {
+//                fileOutputStream.write(buffer, 0, bytesRead);
+//            }
+//        }
+//
+//        writer.println("File uploaded successfully.");
+//    }
+
 
     private void handleFileUpload() throws IOException {
         String filename = reader.readLine();
+        String visibility = reader.readLine();
         File file = new File(clientDirectory, filename);
 
-        if (file.exists()) {
-            writer.println("File already exists.");
-            return;
+        try (BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+            String line;
+            while ((line = reader.readLine()) != null && !line.equals(END_OF_FILE_MARKER)) {
+                byte[] buffer = line.getBytes();
+                fileOutputStream.write(buffer);
+            }
+
+            fileOutputStream.flush();  // Flush the file output stream( nao dite pari)
         }
 
-        try (BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(file))) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = clientSocket.getInputStream().read(buffer)) != -1) {
-                fileOutputStream.write(buffer, 0, bytesRead);
-            }
+
+        if (visibility.equalsIgnoreCase("public")) {
+
+            List<String> list = publiclyUploadedFiles.getOrDefault(username, new ArrayList <>());
+            list.add(filename);
+            publiclyUploadedFiles.put(username, list);
+
+
+        }
+
+        else {
+            List<String> list = privatelyUploadedFiles.getOrDefault(username, new ArrayList <>());
+            list.add(filename);
+            privatelyUploadedFiles.put(username, list);
         }
 
         writer.println("File uploaded successfully.");
