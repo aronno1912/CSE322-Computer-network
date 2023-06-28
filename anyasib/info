@@ -1,0 +1,84 @@
+    private void handleFileUpload() throws IOException {
+         String filename = reader.readLine();
+         String visibility = reader.readLine();
+         String ans=reader.readLine();
+         String reqID= (reader.readLine());
+         System.out.println(reqID);
+         File file = new File(clientDirectory, filename);
+
+ //        try (BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+ //            String line;
+ //            while ((line = reader.readLine()) != null && !line.equals(END_OF_FILE_MARKER)) {
+ //                byte[] buffer = line.getBytes();
+ //                fileOutputStream.write(buffer);
+ //            }
+ //
+ //            fileOutputStream.flush();  // Flush the file output stream( nao dite pari)
+ //        }
+
+
+         try (BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(file))) {
+             String line;
+             while ((line = reader.readLine()) != null && !line.equals(END_OF_FILE_MARKER)) {
+                 byte[] buffer = line.getBytes();
+                 fileOutputStream.write(buffer);
+                 writer.println("OK");  // Send acknowledgement to the client
+             }
+         }
+
+
+
+ //        FileOutputStream fileOutputStream = new FileOutputStream(file);
+ //        BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+ //        // Create a buffer for reading chunks of data
+ //        byte[] buffer = new byte[1024];
+ //
+ //        // Get the input stream from the socket
+ //        InputStream inputStream = clientSocket.getInputStream();
+ //        // Read and save the file in chunks
+ //        int bytesRead;
+ //        while ((bytesRead = inputStream.read(buffer)) != -1) {
+ //            // Write each chunk to the output stream
+ //            bufferedOutputStream.write(buffer, 0, bytesRead);
+ //            writer.println("OK");
+ //        }
+ //   fileOutputStream.flush();
+
+
+
+
+
+
+
+         if (visibility.equalsIgnoreCase("public")) {
+
+             List<String> list = server.publiclyUploadedFiles.getOrDefault(username, new ArrayList <>());
+             list.add(filename);
+             server.publiclyUploadedFiles.put(username, list);
+
+
+         }
+
+         else {
+             List<String> list = server.privatelyUploadedFiles.getOrDefault(username, new ArrayList <>());
+             list.add(filename);
+             server.privatelyUploadedFiles.put(username, list);
+             System.out.println("private e rakhsi "+server.privatelyUploadedFiles.size());
+         }
+
+         if(ans.equalsIgnoreCase("y"))
+         {
+             if(server.allRequests.containsKey(reqID))
+             {
+                 ClientHandler client= server.allRequests.get(reqID);
+                 client.writer.println("Your Requested file is uploaded by an user named "+this.username);
+                 client.writer.println(END_OF_RESPONSE);
+                 client.writer.flush();
+             }
+             else
+                 writer.println("Invalid request id. But your file is uploaded publicly");
+         }
+
+         writer.println("File uploaded successfully.");
+          writer.println(END_OF_RESPONSE);
+     }
