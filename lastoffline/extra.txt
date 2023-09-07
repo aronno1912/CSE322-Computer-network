@@ -1,0 +1,80 @@
+
+    // Task 9: error correction if possible
+
+    //CorrectErrorsAndPrintDataBlock(datablock2,flagiserror2);
+
+    int rowss = datablock2.size();
+    int columnss = datablock2[0].size();
+    
+    // Loop through each row in the data block
+    for (int i = 0; i < rowss; i++)
+    {
+        int errorCount = 0;
+        int errorBit = -1; // Initialize errorBit to -1
+        
+        // Check for errors in the row
+        for (int j = 0; j < columnss; j++)
+        {
+            if (flagiserror2[i][j])
+            {
+                errorCount++;
+                errorBit = j; // Store the index of the first error bit
+            }
+        }
+        
+        // If there is only one error in the row, correct it
+        if (errorCount == 1)
+        {
+            // Toggle the error bit
+            datablock2[i][errorBit] = (datablock2[i][errorBit] == '0') ? '1' : '0';
+            
+            // // Print the corrected bit in red
+            // SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), RED);
+            // cout << datablock2[i][errorBit];
+            // SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE);
+        }
+        // else
+        // {
+        //     // Print the row as is (without corrections)
+        //     for (int j = 0; j < columnss; j++)
+        //     {
+        //         if (flagiserror2[i][j])
+        //         {
+        //             SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), RED);
+        //         }
+        //         cout << datablock2[i][j];
+        //         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE);
+        //     }
+        // }
+        
+        // Move to the next row
+    }
+    cout << "Data block after removing CRC checksum bits and correcting errors:\n";
+    for (int i = 0; i < rowss; i++)
+    {
+    for (int j = 0; j < columnss; j++)
+    {
+        // Check if j+1 (1-based index) is a power of 2
+        bool isCheckBit = ((j + 1) & (j + 1 - 1)) == 0;
+
+        if (!isCheckBit)
+        {
+            if (flagiserror2[i][j] == true)
+            {
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), RED);
+                cout << datablock2[i][j];
+                SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WHITE);
+            }
+            else
+            {
+                cout << datablock2[i][j];
+            }
+        }
+    }
+
+    cout << "\n";
+
+
+
+   
+}
